@@ -3,9 +3,9 @@
 #include "RTClib.h"
 
 //变量声明
+float longitude,latitude
 int year,month,day,hour,minute,second
-long JD
-
+long JD,LST
 RTC_DS1307 rtc;
 
 void setup(){
@@ -29,9 +29,10 @@ void loop(){
   minute = now.minute();
   second = now.second();
   JD =jd(year,month,day);
+  LST = 100.46+0.985647*(JD-2451545)+longitude+15*((hour-8)/15+0.1*minute/(60*15)+0.01*second/(60*15)
 }
 
 void jd(year,month,day){
-  JD= K-32075+1461*(I+4800+(J-14)/12)/4+367*(J-2-(J-14)/12*12)/12-3*((I+4900+(J-14)/12)/100)/4;
+  JD= day-32075+1461*(year+4800+(month-14)/12)/4+367*(month-2-(month-14)/12*12)/12-3*((year+4900+(month-14)/12)/100)/4;
   return JD
 }

@@ -29,7 +29,13 @@ void loop(){
   minute = now.minute();
   second = now.second();
   JD =jd(year,month,day);
-  LST = 100.46+0.985647*(JD-2451545)+longitude+15*((hour-8)/15+0.1*minute/(60*15)+0.01*second/(60*15)
+//计算本地恒星时
+  LST = 100.46+0.985647*(JD-2451545.0)+longitude+15*((hour-8)+minute/60+second/(60*60));
+  While LST<0 LST+=360.0;
+  While LST>360 LST-=360.0;
+  LST = LST/15;
+//计算特定星体的时角
+  t=LST-A
 }
 
 void jd(year,month,day){

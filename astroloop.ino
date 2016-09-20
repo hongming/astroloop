@@ -1,44 +1,126 @@
-//Julian 儒略日的计算方法 http://aa.usno.navy.mil/faq/docs/JD_Formula.php
+//配置DEC步进电机的EasyDriver驱动板
 
-#include "RTClib.h"
+#define DEC_dir_pin 3//步进电机方向
+#define DEC_step_pin 4  //驱动板的步进
+#define DEC_MS2 5 //MS2
+#define DEC_MS1 6 //MS1
+#define Mount_SLEEP 7 //驱动板SLEEP，共用
 
-//变量声明
-float longitude,latitude
-int year,month,day,hour,minute,second
-long JD,LST
-RTC_DS1307 rtc;
+//配置RA步进电机的EasyDriver驱动板
+
+#define RA_dir_pin 8 //步进电机方向
+#define RA_step_pin 9 //驱动板的步进
+#define RA_MS2 10 //MS2
+#define RA_MS1 11 //MS1
+
+
+
+//配置JoyStick
+#define Joy_RA_pin A0 // X轴
+#define Joy_DEC_pin A1  //  Y轴
+#define Joy_switch 2 //SW键,控制速度
+
+//配置暂停按钮
+#define Mount_Stop 12
+
+//配置步进电机速度,步进暂停时间
+int stepper_speed=10;
 
 void setup(){
-  Serial.begin(9600);
-  rtc.begin();
+  pinMode(DEC_MS1,OUTPUT);
+  pinMode(DEC_MS2,OUTPUT);
+  pinMode(DEC_step_pin,OUTPUT);
+  pinMode(DEC_dir_pin,OUTPUT);
+  pinMode(RA_MS1,OUTPUT);
+  pinMode(RA_MS2,OUTPUT);
+  pinMode(RA_step_pin,OUTPUT);
+  pinMode(RA_dir_pin,OUTPUT);
+  pinMode(Mount_SLEEP,OUTPUT);
+  pinMode(Mount_Stop,OUTPUT);
+  pinMode(Joy_RA_pin,INPUT);
+  pinMode(Joy_DEC_pin,INPUT);
+  pinMode(Joy_switch,INPUT);
+//唤醒步进电机
+  digitalWrite(Mount_SLEEP,HIGH);
+//暂停时间
+  delayMicroseconds(100000);
+//配置步进电机类型MS1,MS2 11 FULL, 10 HALF,01 QUARTER,00,Eighth
+  digitalWrite(RA_MS1, HIGH);
+  digitalWrite(RA_MS2,HIGH);
+  digitalWrite(DEC_MS1, HIGH);
+  digitalWrite(DEC_MS2,HIGH);
 
-    if(! rtc.isrunning()){
-      Serial.println("RTC is not running!");
-      rtc.adjust(DateTime(F(__DATE__),F(__TIME__)));
-    }
 }
 
 void loop(){
+//查询速度
+  Step_Speed_Control();
+//RA轴变化
+  if(analogRead(RA_step_pin>=700))
+{
+    if(!(digitalRead(Mount_Stop))){} //如果按下去则不动
+    }
+    else{
+        digitalWrite(RA_dir_pin,LOW);
+        digitalWrite(RA_step_pin,HIGH);
+        delayMicroseconds(stepper_speed);
+        digitalWrite(RA_step_pin,LOW);
+        delayMicroseconds(stepper_speed);
+  }
 
-//计算当前时间
-  DateTime now =rtc.now();
-  year = now.year();
-  month = now.month();
-  day  = now.day();
-  hour= now.hour();
-  minute = now.minute();
-  second = now.second();
-  JD =jd(year,month,day);
-//计算本地恒星时
-  LST = 100.46+0.985647*(JD-2451545.0)+longitude+15*((hour-8)+minute/60+second/(60*60));
-  While LST<0 LST+=360.0;
-  While LST>360 LST-=360.0;
-  LST = LST/15;
-//计算特定星体的时角
-  t=LST-A
+  if(analogRead(RA_step_pin<=300))
+{
+    if(!(digitalRead(Mount_Stop))){} //如果按下去则不动
+    }
+    else{
+        digitalWrite(RA_dir_pin,HIGH);
+        digitalWrite(RA_step_pin,HIGH);
+        delayMicroseconds(stepper_speed);
+        digitalWrite(RA_step_pin,LOW);
+        delayMicroseconds(stepper_speed);
+  }
+
+//DEC轴变化
+    if(analogRead(DEC_step_pin>=700))
+  {
+      if(!(digitalRead(Mount_Stop))){} //如果按下去则不动
+      }
+      else{
+          digitalWrite(DEC_dir_pin,LOW);
+          digitalWrite(DEC_step_pin,HIGH);
+          delayMicroseconds(stepper_speed);
+          digitalWrite(DEC_step_pin,LOW);
+          delayMicroseconds(stepper_speed);
+    }
+
+    if(analogRead(DEC_step_pin<=300))
+  {
+      if(!(digitalRead(Mount_Stop))){} //如果按下去则不动
+      }
+      else{
+          digitalWrite(DEC_dir_pin,HIGH);
+          digitalWrite(DEC_step_pin,HIGH);
+          delayMicroseconds(stepper_speed);
+          digitalWrite(DEC_step_pin,LOW);
+          delayMicroseconds(stepper_speed);
+    }
+
+
 }
 
-void jd(year,month,day){
-  JD= day-32075+1461*(year+4800+(month-14)/12)/4+367*(month-2-(month-14)/12*12)/12-3*((year+4900+(month-14)/12)/100)/4;
-  return JD
+void Step_Speed_Control(){
+  if(!(digitalRead(Joy_switch))){
+  delayMicroseconds(5000); //delay for deboucing
+  switch(stepper_speed){
+  case 100:
+    stepper_speed=1000;
+    break;
+  case 300:
+    stepper_speed=100;
+    break;
+  case 1000:
+    stepper_speed=300;
+    break;
+}
+}
 }

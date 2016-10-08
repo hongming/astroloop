@@ -16,7 +16,7 @@
 
 
 //配置中断
-#define Goto_speed_interrupt 2 //SW键,控制速度,使用中断
+#define Goto_speed_interrupt 20 //SW键,控制速度,使用中断
 
 //配置状态切换按钮
 #define RA_dir_forward 22 //RA前进
@@ -60,7 +60,7 @@ void setup() {
   digitalWrite(DEC_MS1, HIGH);
   digitalWrite(DEC_MS2, HIGH);
   //定义中断
- // attachInterrupt(digitalPinToInterrupt(Goto_speed_interrupt), Step_Speed_Control, CHANGE);
+ attachInterrupt(digitalPinToInterrupt(Goto_speed_interrupt), Step_Speed_Control, CHANGE);
   //陀螺仪启动
 
   //显示屏启动
@@ -107,13 +107,13 @@ void Step_Speed_Control() {
   // if(!(digitalRead(Joy_switch))){
   //delayMicroseconds(5000); //delay for deboucing
   switch (stepper_speed) {
-    case 200:
-      stepper_speed = 8000;
+    case 400:
+      stepper_speed = 2000;
       break;
     case 100:
-      stepper_speed = 200;
+      stepper_speed = 400;
       break;
-    case 8000:
+    case 2000:
       stepper_speed = 100;
       break;
   }
